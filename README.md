@@ -2,4 +2,4 @@
 
 IOS calculator has created with all of its functionality
 
-https://asoylu06.github.io/ios_calculator/
+https://asoylu06.github.io/ios-calculator/
