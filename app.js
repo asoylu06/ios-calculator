@@ -218,9 +218,14 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
         } else if (e.target.classList.contains('number')) {
             
             if(result.toString().includes('+') || result.toString().includes('-') || result.toString().includes('x') || result.toString().includes('÷')) {
-                if (result.toString()[0] == '-') {
+                if (result.toString()[0] == '-' && !operator) {
                     result = result + e.target.textContent;
-                    display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
+                    display.textContent = result.slice(0, result.length);
+
+                } else if (result.toString()[0] == '-' && operator) {
+                    result = result + e.target.textContent;
+                    display.textContent = result.slice(result.toString().lastIndexOf(operator)+1, result.length);
+                
                 } else if (result.toString()[result.length-1] == '0' && result.toString()[result.length-2] == operator) {
                     result = result.toString().slice(0, -1);
                     result = result + e.target.textContent;
@@ -247,25 +252,29 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
         } else if (e.target.classList.contains('comma')) {
             if (result.toString().includes('.')) {
                 if (result.toString().includes('+') || result.toString().includes('-') || result.toString().includes('x') || result.toString().includes('÷')) {
-                    if (result.toString()[0] == '-') {
-                        result = result + ".";
-                        display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
-
-                    } else if (result.toString().lastIndexOf(operator) < result.toString().lastIndexOf('.')) {
+                    if (result.toString().lastIndexOf(operator) < result.toString().lastIndexOf('.')) {
                         return;
 
+                    } else if(result.toString()[0] == '-' && !operator) {
+                        result = result;
+                        display.textContent = result.toString().slice(0, result.length);
+                        
                     } else {
-                    result = result + ".";
-                    display.textContent = result.slice(result.indexOf(operator)+1, result.length);
+                        result = result + ".";
+                        display.textContent = result.toString().slice(result.toString().lastIndexOf(operator)+1, result.length);
                     }
                     
                 } else {
                 return;
                 }
 
-            } else {
-            result = result + ".";
-            display.textContent = result;
+            } else if (operator){
+                result = result + ".";
+                display.textContent = result.slice(result.indexOf(operator)+1, result.length);
+
+            } else{
+                result = result + ".";
+                display.textContent = result;
             }
 
         } else {
@@ -285,6 +294,9 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
         } else {
             display.textContent = display.textContent.replace('.',',').replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
         }
+
+        display.textContent[0] == ',' ? display.textContent = '0' + display.textContent : display.textContent;
+
     holdButton();
     displaySize();
     console.log(result);
