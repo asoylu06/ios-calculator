@@ -19,6 +19,55 @@ let comma = document.querySelector('.comma');
 let percent = document.querySelector('.percent');
 let plusminus = document.querySelector('.plusminus');
 
+/*
+function rpl(str) {
+    return str.replace('*', 'x').replace('/', '÷').replace('Escape', 'C').replace('Enter', '=').replace('.', ',');
+}
+
+onkeydown = function(e) {
+
+    let key = "(//div/div[text()='" + rpl(e.key) + "'])[1]";
+    console.log(key);   
+   
+
+    let elm = document.evaluate(key, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+
+    if (elm) {
+        e.target.classList.contains('main') ? display.textContent = 'err' : null;
+        elm.click();
+        console.log(elm);
+    }
+
+    if (e.key == 'Backspace') {
+        if(result.length > 2 && result[result.length - 1] == operator) {
+            result = result.toString().slice(0, -2);
+            display.textContent = result;
+            operator = '';
+
+        } else if (result.length == 1 || result.length == 0 || result[0] == '-') {
+            result = '0';
+            display.textContent = result;
+            operator = '';
+
+        } else if (result.toString().includes('+') || result.toString().includes('-') || result.toString().includes('*') || result.toString().includes('/')) {
+            result = result.toString().slice(0, -1);
+            display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
+        } else {
+            result = result.toString().slice(0, -1);
+            display.textContent = result;
+        }
+
+        display.textContent = result.toString().replace('.', ',').replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+
+        holdButton();
+        displaySize();
+
+        console.log(result);
+        console.log(operator);
+        }
+};
+*/
+
 onkeydown = function(e) {
     if (e.key == '0') {
         zero.click();
@@ -86,7 +135,7 @@ onkeydown = function(e) {
     } else if (e.key == '+/-') {
         plusminus.click();
     }
-}
+};
 
 
 let result = '';
@@ -155,12 +204,13 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
                 
                 } else {
                     result = eval(result.toString().replaceAll(/x/g, "*").replaceAll(/÷/g, "/"));
-                    display.textContent = parseFloat(result.toFixed(10));
+                    display.textContent = parseFloat(result.toFixed(10)).toString().replace('.', ',');
                     result = result + e.target.textContent;   
                 }
 
             } else {
                 result = result + e.target.textContent;
+
             }
 
             operator = e.target.textContent;
@@ -201,6 +251,9 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
                         result = result + ".";
                         display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
 
+                    } else if (result.toString().lastIndexOf(operator) < result.toString().lastIndexOf('.')) {
+                        return;
+
                     } else {
                     result = result + ".";
                     display.textContent = result.slice(result.indexOf(operator)+1, result.length);
@@ -227,8 +280,11 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
             }
         }
 
-    display.textContent = display.textContent.replace('.',',').replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
-       
+        if (e.target.classList.contains('main')) {
+            display.textContent = display.textContent.replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+        } else {
+            display.textContent = display.textContent.replace('.',',').replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+        }
     holdButton();
     displaySize();
     console.log(result);

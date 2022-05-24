@@ -46,15 +46,16 @@ body {
     align-items: center;
     cursor: pointer;
     filter: brightness(1) ;
-    transition: filter 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
 .equal, .comma, .zero, .one, .two, .three, .four, .five, .six, .seven, .eight, .nine {
     background-color: #333;
+    transition: all 0.3s ease-in-out;
 }
 
 .main {
-    background-color: #F1A33C;
+    background-color: #F09114;
     transition: all 0.3s ease-in-out;
 }
 
@@ -96,6 +97,11 @@ body {
 
 .circle:not(.main):hover, .elliptic:hover {
     filter: brightness(2.5);
+}
+
+.active {
+    filter: brightness(2.5);
+    transition: all 0.1s ease-in-out;
 }
 
 @media screen and (max-width: 550px) {
