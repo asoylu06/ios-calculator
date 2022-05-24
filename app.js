@@ -15,7 +15,7 @@ let divide = document.querySelector('.divide');
 let equal = document.querySelector('.equal');
 let clear = document.querySelector('.clear');
 let display = document.querySelector('.display');
-let dot = document.querySelector('.dot');
+let comma = document.querySelector('.comma');
 let percent = document.querySelector('.percent');
 let plusminus = document.querySelector('.plusminus');
 
@@ -50,24 +50,39 @@ onkeydown = function(e) {
         divide.click();
     } else if (e.key == 'Enter') {
         equal.click();
-    } else if (e.key == '.') {
-        dot.click();
+    } else if (e.key == ',') {
+        comma.click();
     } else if (e.key == '%') {
         percent.click();
     } else if (e.key == 'Escape') {
         clear.click();
     } else if (e.key == 'Backspace') {
-        if(result.length > 1 && result[result.length - 1] == operator) {
+        if(result.length > 2 && result[result.length - 1] == operator) {
             result = result.toString().slice(0, -2);
             display.textContent = result;
-        } else if (result.length == 1 || result.length == 0) {
-            result = '';
-            display.textContent = "0";
+            operator = '';
+
+        } else if (result.length == 1 || result.length == 0 || result[0] == '-') {
+            result = '0';
+            display.textContent = result;
+            operator = '';
+
+        } else if (result.toString().includes('+') || result.toString().includes('-') || result.toString().includes('*') || result.toString().includes('/')) {
+            result = result.toString().slice(0, -1);
+            display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
         } else {
             result = result.toString().slice(0, -1);
             display.textContent = result;
         }
-        display.textContent = display.textContent.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        display.textContent = result.toString().replace('.', ',').replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+
+        holdButton();
+        displaySize();
+
+        console.log(result);
+        console.log(operator);
+
     } else if (e.key == '+/-') {
         plusminus.click();
     }
@@ -90,7 +105,7 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
         document.querySelector('.clear').textContent = 'C';
 
         if (e.target.classList.contains('clear')) {
-            result = '';
+            result = '0';
             display.textContent = '0';
             document.querySelector('.clear').textContent = 'AC';
             operator = '';
@@ -98,7 +113,7 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
 
         } else if (e.target.classList.contains('plusminus')) {
             if(typeof result != 'number') {
-            result = eval(result.replace(/x/g, "*").replace(/÷/g, "/"));
+            result = eval(result.replaceAll(/x/g, "*").replaceAll(/÷/g, "/"));
             result = result * -1;
             display.textContent = result;
 
@@ -106,19 +121,22 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
             result = result * -1;
             display.textContent = result;
             }
+
             operator = '';
             isOver = false;
 
         } else if (e.target.classList.contains('percent')) {
+
             if(typeof result != 'number') {
-            result = eval(result.replace(/x/g, "*").replace(/÷/g, "/"));
-            result = result / 100;
+            result = eval(result.replaceAll(/x/g, "*").replaceAll(/÷/g, "/"));
+            result = parseFloat(result.toFixed(10)) / 100;
             display.textContent = result;
 
             } else {
-            result = result / 100;
+            result = parseFloat(result.toFixed(10)) / 100;
             display.textContent = result;
             }
+
             operator = '';
             isOver = true;
 
@@ -130,9 +148,14 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
             } else if (result.toString().includes('+') || result.toString().includes('-') || result.toString().includes('x') || result.toString().includes('÷')) {
                 if (result.toString()[0] == '-') {
                     result = result + e.target.textContent;
+
+                } else if (result.length >= 2 && result.toString()[result.length-1] == '0' && result.toString()[result.length-2] == '÷') {
+                    result = '0';
+                    display.textContent = 'undefined';
+                
                 } else {
-                    result = eval(result.toString().replace(/x/g, "*").replace(/÷/g, "/"));
-                    display.textContent = parseFloat(result.toFixed(5));
+                    result = eval(result.toString().replaceAll(/x/g, "*").replaceAll(/÷/g, "/"));
+                    display.textContent = parseFloat(result.toFixed(10));
                     result = result + e.target.textContent;   
                 }
 
@@ -148,12 +171,18 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
                 if (result.toString()[0] == '-') {
                     result = result + e.target.textContent;
                     display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
+                } else if (result.toString()[result.length-1] == '0' && result.toString()[result.length-2] == operator) {
+                    result = result.toString().slice(0, -1);
+                    result = result + e.target.textContent;
+                    display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
                 } else {
                 result = result + e.target.textContent;
                 display.textContent = result.slice(result.indexOf(operator)+1, result.length);
                 }
+
             } else if(isOver) { 
-                result = '';
+                result = e.target.textContent;
+                display.textContent = result;
                 isOver = false;
 
             } else if (result.toString() == '0') {
@@ -165,23 +194,41 @@ document.querySelectorAll('.main-body > div:not(.display)').forEach(function(ele
             display.textContent = result;
             }
 
-        } else if (e.target.classList.contains('dot')) {
-            if (result.includes('.')) {
+        } else if (e.target.classList.contains('comma')) {
+            if (result.toString().includes('.')) {
+                if (result.toString().includes('+') || result.toString().includes('-') || result.toString().includes('x') || result.toString().includes('÷')) {
+                    if (result.toString()[0] == '-') {
+                        result = result + ".";
+                        display.textContent = result.slice(result.lastIndexOf(operator)+1, result.length);
+
+                    } else {
+                    result = result + ".";
+                    display.textContent = result.slice(result.indexOf(operator)+1, result.length);
+                    }
+                    
+                } else {
                 return;
+                }
+
             } else {
-            result = result + e.target.textContent;
+            result = result + ".";
             display.textContent = result;
             }
 
         } else {
-            result = eval(result.toString().replace(/x/g, "*").replace(/÷/g, "/"));
-            display.textContent = parseFloat(result.toFixed(5));
+            if (result.length >= 2 && result.toString()[result.length-1] == '0' && result.toString()[result.length-2] == '÷') {
+                result = '0';
+                display.textContent = 'undefined';
+
+            } else {result = eval(result.toString().replaceAll(/x/g, "*").replaceAll(/÷/g, "/"));
+            display.textContent = parseFloat(result.toFixed(10));
             isOver = true;
             operator = '';
+            }
         }
-        
-        display.textContent = display.textContent.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    
+
+    display.textContent = display.textContent.replace('.',',').replace(/\B(?<!\,\d*)(?=(\d{3})+(?!\d))/g, ".");
+       
     holdButton();
     displaySize();
     console.log(result);
@@ -202,112 +249,14 @@ function displaySize() {
     }
 }
 
-function holdButton(e) {
-    if (operator != '+' && operator != '-' && operator != 'x' && operator != '÷') {
-        document.querySelectorAll('.main').forEach(function(elem) { 
-            elem.style.opacity = '1';
-        });
-    } else if(operator == '+') {
-    document.querySelectorAll('.main').forEach(function(elem) { 
-        elem.style.opacity = '1';});
-    document.querySelector('.plus').style.opacity = '0.5';
-    } else if(operator == '-') {
-    document.querySelectorAll('.main').forEach(function(elem) { 
-        elem.style.opacity = '1';});
-    document.querySelector('.minus').style.opacity = '0.5';
-    } else if(operator == 'x') {
-    document.querySelectorAll('.main').forEach(function(elem) { 
-        elem.style.opacity = '1';});
-    document.querySelector('.multiply').style.opacity = '0.5';
-    } else if(operator == '÷') {
-    document.querySelectorAll('.main').forEach(function(elem) { 
-        elem.style.opacity = '1';});
-    document.querySelector('.divide').style.opacity = '0.5';
-    }
-}
 
-
-// let number = '';
-// let next_number = '';
-// let operator = '';
-// let result = '';
-
-// document.querySelectorAll('.main-body > div').forEach(function(elem) {
-//     elem.onclick = function(e) {
-
-//         e.target.classList.add('active'); 
-//         setTimeout(function() {
-//         e.target.classList.remove('active');
-//         }
-//         , 100);
-//         document.querySelector('.clear').textContent = 'C';
-
-
-//         if (e.target.classList.contains('clear')) {
-//             result = '';
-//             display.textContent = '0';
-//             document.querySelector('.clear').textContent = 'AC';
-
-//         } else if (e.target.classList.contains('plusminus')) {
-//             result = result * -1;
-//             display.textContent = result;
-
-//         } else if (e.target.classList.contains('percent')) {
-//             result = result / 100;
-//             display.textContent = result;
-
-//         } else if (e.target.classList.contains('main')) {
-//             operator = e.target.textContent;
-
-//         } else if (e.target.classList.contains('number')) {
-//             if(operator == '') {
-//                 number = number + e.target.textContent;
-//                 display.textContent = number;
-
-//             } else {
-//             next_number = next_number + e.target.textContent;
-//             display.textContent = next_number;
-//             }
-
-//         } else if (e.target.classList.contains('dot')) {
-//             if (operator == '' && number.includes('.') ) {
-//                 return;
-
-//             } else if (operator != '' && next_number.includes('.') ) {
-//                 return;
-
-//             } else if (operator == '' && !number.includes('.') ) {
-//                 number = number + e.target.textContent;
-//                 display.textContent = number;
-
-//             } else if (operator != '' && !next_number.includes('.') ) {
-//                 next_number = next_number + e.target.textContent;
-//                 display.textContent = next_number;
-//             }
-
-//         } else {
-//             if (operator == '') {
-//                 result = number;
-//                 number = '';
-//                 next_number = '';
-//                 operator = e.target.textContent;
-//                 display.textContent = operator;
-
-//             } else {
-//                 result = result + next_number;
-//                 next_number = '';
-//                 operator = e.target.textContent;
-//                 display.textContent = operator;
-//             }
-
-//             result = eval(result.replace(/x/g, "*").replace(/÷/g, "/"));
-//             display.textContent = parseFloat(result.toFixed(5));
-//         }
-
-//     }
-// });
-
-// //number with c
-// function nwc(x) {
-//     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-// }
+function holdButton() {
+    document.querySelectorAll('.main').forEach(function(elem) {
+        if (elem.textContent == operator) {
+            elem.style.backgroundColor = 'white';
+            elem.style.color = '#F1A33C';
+        } else {
+            elem.style.backgroundColor = '#F09114';
+            elem.style.color = 'white';
+        }
+    })};
